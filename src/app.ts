@@ -1,3 +1,33 @@
+// Validation logic
+interface Validatable {
+  value: string | number;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+}
+
+function validate(input: Validatable) {
+  let isValid = true;
+
+  if (input.required)
+    isValid = isValid && input.value.toString().trim().length !== 0;
+
+  if (input.minLength != null && typeof input.value === "string")
+    isValid = isValid && input.value.length >= input.minLength;
+
+  if (input.maxLength != null && typeof input.value === "string")
+    isValid = isValid && input.value.length <= input.maxLength;
+
+  if (input.min != null && typeof input.min === "number")
+    isValid = isValid && input.value >= input.min;
+
+  if (input.max != null && typeof input.max === "number")
+    isValid = isValid && input.value <= input.max;
+
+  return isValid;
+}
 //add AutoBind Decorator
 function autoBind(_: any, _2: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
@@ -49,10 +79,25 @@ class ProjectInput {
     const enteredDescription = this.descriptionInputElement.value;
     const enteredPeople = this.peopleInputElement.value;
 
+    const titleValidatable: Validatable = {
+      value: enteredTitlte,
+      required: true,
+    };
+    const descriptionValidatable: Validatable = {
+      value: enteredDescription,
+      required: true,
+      minLength: 5,
+    };
+    const enteredPeopleValidatable: Validatable = {
+      value: +enteredPeople,
+      required: true,
+      min: 1,
+      max: 5,
+    };
     if (
-      enteredTitlte.trim().length === 0 ||
-      enteredDescription.trim().length === 0 ||
-      enteredPeople.trim().length === 0
+      !validate(titleValidatable) ||
+      !validate(descriptionValidatable) ||
+      !validate(enteredPeopleValidatable)
     ) {
       alert("Invalid inout! PLease try again!");
       return;
@@ -74,6 +119,7 @@ class ProjectInput {
     if (Array.isArray(userInput)) {
       const [title, description, people] = userInput;
       console.log(title, description, people);
+      this.clearInputs();
     }
   }
   private configure() {
