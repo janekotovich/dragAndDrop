@@ -3,7 +3,9 @@ class ProjectState {
   private listeners: any[] = [];
   private projects: any[] = [];
   private static instance: ProjectState;
+
   private constructor() {}
+
   static getInstance() {
     if (this.instance) {
       return this.instance;
@@ -11,11 +13,9 @@ class ProjectState {
     this.instance = new ProjectState();
     return this.instance;
   }
+
   addListener(listenerFn: Function) {
     this.listeners.push(listenerFn);
-    for (const listener of this.listeners) {
-      listener(this.projects.slice());
-    }
   }
   addProject(title: string, description: string, numOfPpl: number) {
     const newProject = {
@@ -25,6 +25,9 @@ class ProjectState {
       people: numOfPpl,
     };
     this.projects.push(newProject);
+    for (const listenerFn of this.listeners) {
+      listenerFn(this.projects.slice());
+    }
   }
 }
 
@@ -81,15 +84,17 @@ class ProjectList {
   assignedProjects: any[];
 
   constructor(private type: "active" | "finished") {
-    this.templateElement = <HTMLTemplateElement>(
-      document.getElementById("project-list")!
-    );
+    this.templateElement = document.getElementById(
+      "project-list"
+    )! as HTMLTemplateElement;
     this.hostElement = document.getElementById("app")! as HTMLDivElement;
     this.assignedProjects = [];
+
     const importedNode = document.importNode(
       this.templateElement.content,
       true
     );
+
     this.element = importedNode.firstElementChild as HTMLElement;
     this.element.id = `${this.type}-projects`;
 
